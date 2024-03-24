@@ -5,21 +5,19 @@ import reducer from "../reducer/ProductReducer";
 const AppContext = createContext();
 
 const API = "https://api.pujakaitem.com/api/products";
-//INITIAL STATE
+
 const initialState = {
   isLoading: false,
   isError: false,
   products: [],
   featureProducts: [],
-  isProductLoading: false,
-  SingleProduct: {}
+  isSingleLoading: false,
+  singleProduct: {},
 };
-//APP PROVIDER
+
 const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-
-  //API GET STORED INSIDE THE PRODUCTS
   const getProducts = async (url) => {
     dispatch({ type: "SET_LOADING" });
     try {
@@ -31,30 +29,31 @@ const AppProvider = ({ children }) => {
     }
   };
 
-  //GET_SINGLE_PRODUCTS FROM API
-  const getSingleProduct = async(url) => {
-    dispatch({type: "IS_LOADING"})
+  // my 2nd api call for single product
+
+  const getSingleProduct = async (url) => {
+    dispatch({ type: "SET_SINGLE_LOADING" });
     try {
       const res = await axios.get(url);
-      const SingleProduct = await res.data;
-      dispatch({type: "GET_SINGLE_PRODUCT", payload: SingleProduct})
+      const singleProduct = await res.data;
+      dispatch({ type: "SET_SINGLE_PRODUCT", payload: singleProduct });
     } catch (error) {
-      dispatch({type: "IS_ERROR"})
+      dispatch({ type: "SET_SINGLE_ERROR" });
     }
-  }
+  };
 
-
-//GETS PRODUCTS VALUE FROM API
   useEffect(() => {
     getProducts(API);
   }, []);
 
   return (
-    <AppContext.Provider value={{ ...state }}>{children}</AppContext.Provider>
+    <AppContext.Provider value={{ ...state, getSingleProduct }}>
+      {children}
+    </AppContext.Provider>
   );
 };
 
-// CUSTOM HOOKS
+// custom hooks
 const useProductContext = () => {
   return useContext(AppContext);
 };
